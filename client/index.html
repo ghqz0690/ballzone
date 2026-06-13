@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#1a7f37">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="球域">
+  <meta name="description" content="足球篮球资讯平台">
+  <link rel="manifest" href="/manifest.json">
+  <title>球域 - 足球&篮球</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: "PingFang SC", "Helvetica Neue", sans-serif;
+      background: #0d0d0d;
+      color: #fff;
+      min-height: 100vh;
+      max-width: 430px;
+      margin: 0 auto;
+    }
+    .header {
+      background: #0d0d0d;
+      padding: 16px 20px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-title { font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+    .tab-bar {
+      display: flex;
+      background: #1a1a1a;
+      margin: 14px 20px 0;
+      border-radius: 12px;
+      padding: 4px;
+    }
+    .tab {
+      flex: 1;
+      text-align: center;
+      padding: 9px 0;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 9px;
+      transition: all 0.25s;
+      color: #666;
+    }
+    .tab.active-football { background: #1a7f37; color: #fff; }
+    .tab.active-basketball { background: #e65529; color: #fff; }
+    .feed { padding: 16px 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .card {
+      background: #1a1a1a;
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .card:active { transform: scale(0.97); }
+    .card-img { width: 100%; aspect-ratio: 16/9; object-fit: cover; background: #2d2d2d; display: block; }
+    .card-body { padding: 10px 10px 12px; }
+    .card-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+      line-height: 1.45;
+      margin-bottom: 6px;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+    .card-time { font-size: 11px; color: #666; }
+    .empty { grid-column: 1/-1; text-align: center; padding: 60px 20px; color: #555; font-size: 14px; }
+    /* Banner */
+    .banner {
+      margin: 12px 14px 0;
+      border-radius: 12px;
+      overflow: hidden;
+      height: 160px;
+      position: relative;
+      cursor: pointer;
+    }
+    .banner img { width: 100%; height: 100%; object-fit: cover; }
+    .banner-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 20px 16px 14px;
+      background: linear-gradient(transparent, rgba(0,0,0,0.85));
+      font-size: 16px;
+      font-weight: 700;
+    }
+    /* Detail */
+    .detail { display: none; position: fixed; inset: 0; background: #0d0d0d; z-index: 200; overflow-y: auto; }
+    .detail.active { display: block; }
+    .detail-header {
+      display: flex;
+      align-items: center;
+      padding: 14px 16px;
+      gap: 12px;
+      background: #0d0d0d;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .back-btn { font-size: 28px; color: #fff; cursor: pointer; line-height: 1; }
+    .detail-tag { font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+    .tag-football { background: #1a7f37; color: #fff; }
+    .tag-basketball { background: #e65529; color: #fff; }
+    .detail-cover { width: 100%; max-height: 260px; object-fit: cover; display: block; }
+    .detail-body { padding: 20px 18px 40px; }
+    .detail-title { font-size: 20px; font-weight: 700; line-height: 1.4; margin-bottom: 8px; }
+    .detail-time { font-size: 12px; color: #666; margin-bottom: 18px; }
+    .bar { height: 1px; background: #2d2d2d; margin: 18px 0; }
+    .detail-content { font-size: 15px; line-height: 1.8; color: #ccc; white-space: pre-wrap; }
+    /* PWA install banner */
+    .install-banner {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 430px;
+      background: #1a7f37;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      z-index: 999;
+      display: none;
+    }
+    .install-banner.show { display: flex; }
+    .install-banner span { font-size: 14px; font-weight: 600; }
+    .install-btn {
+      background: #fff;
+      color: #1a7f37;
+      border: none;
+      border-radius: 20px;
+      padding: 7px 18px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .close-btn { background: none; border: none; color: #fff; font-size: 22px; cursor: pointer; line-height: 1; padding: 4px; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-title"><span id="headerIcon">⚽</span> 球域</div>
+</div>
+
+<div class="tab-bar">
+  <div class="tab active-football" id="tabFootball" onclick="switchTab('football')">⚽ 足球</div>
+  <div class="tab" id="tabBasketball" onclick="switchTab('basketball')">🏀 篮球</div>
+</div>
+
+<!-- Banner (featured article) -->
+<div class="banner" id="banner" onclick="openDetail(bannerId)" style="display:none;">
+  <img id="bannerImg" src="" alt="">
+  <div class="banner-overlay" id="bannerTitle"></div>
+</div>
+
+<div class="feed" id="feed"></div>
+
+<!-- Detail -->
+<div class="detail" id="detailPage">
+  <div class="detail-header">
+    <div class="back-btn" onclick="closeDetail()">←</div>
+    <span class="detail-tag" id="detailTag"></span>
+  </div>
+  <img class="detail-cover" id="detailCover" src="" alt="">
+  <div class="detail-body">
+    <div class="detail-title" id="detailTitle"></div>
+    <div class="detail-time" id="detailTime"></div>
+    <div class="bar"></div>
+    <div class="detail-content" id="detailContent"></div>
+  </div>
+</div>
+
+<!-- PWA Install Banner -->
+<div class="install-banner" id="installBanner">
+  <span>📱 收藏到桌面，体验更像APP</span>
+  <button class="install-btn" onclick="installApp()">立即添加</button>
+  <button class="close-btn" onclick="closeBanner()">×</button>
+</div>
+
+<script>
+var currentType = 'football';
+var bannerId = '';
+var deferredPrompt = null;
+
+// PWA install
+window.addEventListener('beforeinstallprompt', function(e) {
+  e.preventDefault();
+  deferredPrompt = e;
+  setTimeout(function() {
+    document.getElementById('installBanner').classList.add('show');
+  }, 3000);
+});
+
+function installApp() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(function() {
+    closeBanner();
+    deferredPrompt = null;
+  });
+}
+function closeBanner() {
+  document.getElementById('installBanner').classList.remove('show');
+}
+
+function getData(type) {
+  try { return JSON.parse(localStorage.getItem('data_' + type) || '[]'); } catch { return []; }
+}
+
+function switchTab(type) {
+  currentType = type;
+  document.getElementById('tabFootball').className = 'tab' + (type === 'football' ? ' active-football' : '');
+  document.getElementById('tabBasketball').className = 'tab' + (type === 'basketball' ? ' active-basketball' : '');
+  document.getElementById('headerIcon').textContent = type === 'football' ? '⚽' : '🏀';
+  renderFeed();
+}
+
+function renderFeed() {
+  var data = getData(currentType);
+  var feed = document.getElementById('feed');
+  // Banner
+  if (data.length > 0) {
+    bannerId = data[0].id;
+    document.getElementById('bannerImg').src = data[0].image || '';
+    document.getElementById('bannerTitle').textContent = data[0].title;
+    document.getElementById('banner').style.display = 'block';
+  } else {
+    document.getElementById('banner').style.display = 'none';
+  }
+  // Cards
+  var cards = data.slice(1);
+  if (!cards.length) {
+    feed.innerHTML = '<div class="empty">暂无内容</div>';
+    return;
+  }
+  feed.innerHTML = cards.map(function(item) {
+    return '<div class="card" onclick="openDetail(\'' + item.id + '\')">' +
+      '<img class="card-img" src="' + (item.image || '') + '" onerror="this.style.display=\'none\'">' +
+      '<div class="card-body">' +
+      '<div class="card-title">' + escHtml(item.title) + '</div>' +
+      '<div class="card-time">' + fmtTime(item.createTime) + '</div>' +
+      '</div></div>';
+  }).join('');
+}
+
+function openDetail(id) {
+  var data = getData(currentType);
+  var item = data.find(function(x) { return x.id === id; });
+  if (!item) return;
+  var tag = document.getElementById('detailTag');
+  tag.textContent = currentType === 'football' ? '⚽ 足球' : '🏀 篮球';
+  tag.className = 'detail-tag ' + (currentType === 'football' ? 'tag-football' : 'tag-basketball');
+  var cover = document.getElementById('detailCover');
+  cover.src = item.image || '';
+  cover.style.display = item.image ? 'block' : 'none';
+  document.getElementById('detailTitle').textContent = item.title;
+  document.getElementById('detailTime').textContent = fmtTime(item.createTime);
+  document.getElementById('detailContent').textContent = item.content;
+  document.getElementById('detailPage').classList.add('active');
+}
+
+function closeDetail() {
+  document.getElementById('detailPage').classList.remove('active');
+}
+
+function escHtml(s) {
+  var div = document.createElement('div');
+  div.textContent = s;
+  return div.innerHTML;
+}
+
+function fmtTime(ts) {
+  if (!ts) return '';
+  var d = new Date(ts);
+  return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+}
+function pad(n) { return n < 10 ? '0' + n : n; }
+
+// Init demo data
+(function init() {
+  var fd = getData('football');
+  var bd = getData('basketball');
+  if (!fd.length && !bd.length) {
+    localStorage.setItem('data_football', JSON.stringify([
+      { id: 'fb1', title: '欧冠决赛：皇马3-1击败曼城夺冠', content: '北京时间6月13日，欧冠决赛在伦敦打响，皇马凭借本泽马的帽子戏法3-1击败曼城，成功捧起队史第15座欧冠奖杯。', image: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=600&q=80', createTime: '2026-06-13T10:00:00' },
+      { id: 'fb2', title: '姆巴佩加盟皇马，签约5年', content: '法国巨星姆巴佩正式加盟皇马，据悉周薪达到50万英镑，刷新足坛纪录。', image: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=600&q=80', createTime: '2026-06-12T14:00:00' },
+      { id: 'fb3', title: '中超赛季半程：海港领跑积分榜', content: '2026赛季中超联赛半程结束，上海海港以8分优势领跑，蓉城和国安分列二三。', image: 'https://images.unsplash.com/photo-1553778263-73a83bab9b0c?w=600&q=80', createTime: '2026-06-11T09:00:00' },
+      { id: 'fb4', title: '英格兰公布欧洲杯大名单', content: '英格兰主帅公布欧洲杯25人名单，贝林厄姆、萨卡领衔，凯恩担任队长。', image: 'https://images.unsplash.com/photo-1551958219-acbc608c6377?w=600&q=80', createTime: '2026-06-10T16:00:00' }
+    ]));
+    localStorage.setItem('data_basketball', JSON.stringify([
+      { id: 'bb1', title: 'NBA总决赛：湖人4-2淘汰凯尔特人夺冠', content: 'NBA总决赛G6，湖人客场击败凯尔特人，总比分4-2夺得2026赛季总冠军，詹姆斯荣膺FMVP。', image: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=600&q=80', createTime: '2026-06-13T11:00:00' },
+      { id: 'bb2', title: '文班亚马获选最佳新秀', content: 'NBA官方宣布，马刺新秀文班亚构以全票当选2025-26赛季最佳新秀，场均贡献22.4分10.8篮板。', image: 'https://images.unsplash.com/photo-1519861531473-9200262188bf?w=600&q=80', createTime: '2026-06-12T15:00:00' },
+      { id: 'bb3', title: 'CBA全明星赛南方队大胜北方队', content: 'CBA全明星周末正赛，南方队以158-142击败北方队，吴前砍下32分当选MVP。', image: 'https://images.unsplash.com/photo-1504450758481-7338eba7524a?w=600&q=80', createTime: '2026-06-11T10:00:00' },
+      { id: 'bb4', title: 'NBA交易截止日：重磅交易汇总', content: 'NBA交易截止日，多支球队完成交易，其中太阳换来杜兰特成为最大焦点。', image: 'https://images.unsplash.com/photo-1483729558449-99ef09a8c325?w=600&q=80', createTime: '2026-06-10T08:00:00' }
+    ]));
+  }
+  switchTab('football');
+})();
+renderFeed();
+</script>
+</body>
+</html>

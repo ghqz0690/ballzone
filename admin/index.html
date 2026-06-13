@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#1a7f37">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="球域管理">
+  <title>球域 - 管理后台</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: "PingFang SC", "Helvetica Neue", sans-serif;
+      background: #0d0d0d;
+      color: #fff;
+      min-height: 100vh;
+      max-width: 430px;
+      margin: 0 auto;
+    }
+    .header {
+      padding: 16px 20px;
+      border-bottom: 1px solid #2d2d2d;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header-title { font-size: 18px; font-weight: 700; }
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* Home */
+    .home { padding: 30px 20px; }
+    .home h2 { font-size: 14px; color: #555; margin-bottom: 20px; letter-spacing: 1px; text-transform: uppercase; }
+    .type-btn {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: #1a1a1a;
+      border-radius: 14px;
+      padding: 22px 20px;
+      margin-bottom: 16px;
+      cursor: pointer;
+      transition: transform 0.2s;
+      border: 2px solid transparent;
+    }
+    .type-btn:active { transform: scale(0.97); }
+    .type-btn.football { border-color: #1a7f37; }
+    .type-btn.basketball { border-color: #e65529; }
+    .type-icon { font-size: 40px; }
+    .type-info h3 { font-size: 18px; margin-bottom: 4px; }
+    .type-info p { font-size: 13px; color: #666; }
+    .type-btn.football .type-info h3 { color: #2eb55a; }
+    .type-btn.basketball .type-info h3 { color: #f5a623; }
+
+    /* Form */
+    .form-page { padding: 16px 18px 40px; }
+    .back-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 28px;
+      color: #fff;
+      cursor: pointer;
+      margin-bottom: 18px;
+      line-height: 1;
+    }
+    .form-tag { font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 20px; margin-left: 8px; vertical-align: middle; }
+    .tag-football { background: #1a7f37; color: #fff; }
+    .tag-basketball { background: #e65529; color: #fff; }
+    .form-group { margin-bottom: 18px; }
+    .form-label { font-size: 14px; font-weight: 600; color: #ccc; margin-bottom: 8px; display: block; }
+    .upload-box {
+      background: #1a1a1a;
+      border: 2px dashed #333;
+      border-radius: 12px;
+      padding: 28px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .upload-box:hover { border-color: #555; }
+    .upload-box.has-img { padding: 8px; }
+    .upload-box img { width: 100%; max-height: 180px; object-fit: cover; border-radius: 8px; display: block; }
+    .upload-text { font-size: 14px; color: #666; }
+    .upload-sub { font-size: 12px; color: #444; margin-top: 4px; }
+    #imgInput { display: none; }
+    textarea {
+      width: 100%;
+      background: #1a1a1a;
+      border: 1px solid #2d2d2d;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 14px;
+      padding: 12px;
+      resize: none;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    textarea:focus { border-color: #555; }
+    textarea.title-input { height: 46px; }
+    textarea.content-input { height: 140px; }
+    .submit-btn {
+      width: 100%;
+      background: #1a7f37;
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 15px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: opacity 0.2s;
+    }
+    .submit-btn:active { opacity: 0.8; }
+    .submit-btn.basketball { background: #e65529; }
+
+    /* List */
+    .list-page { padding: 0; }
+    .list-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      border-bottom: 1px solid #2d2d2d;
+      gap: 10px;
+    }
+    .list-header-left { display: flex; align-items: center; gap: 8px; }
+    .list-back { font-size: 26px; color: #fff; cursor: pointer; }
+    .list-title { font-size: 17px; font-weight: 700; }
+    .add-btn {
+      background: #1a7f37;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .add-btn.basketball { background: #e65529; }
+    .list-body { padding: 12px 16px; }
+    .list-item {
+      background: #1a1a1a;
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 10px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .list-thumb {
+      width: 64px;
+      height: 48px;
+      object-fit: cover;
+      border-radius: 8px;
+      background: #2d2d2d;
+      flex-shrink: 0;
+    }
+    .list-info { flex: 1; min-width: 0; }
+    .list-item-title { font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 4px; }
+    .list-item-time { font-size: 11px; color: #555; }
+    .del-btn { background: #c0392b; color: #fff; border: none; border-radius: 8px; padding: 7px 12px; font-size: 12px; cursor: pointer; flex-shrink: 0; }
+    .empty-list { text-align: center; padding: 50px; color: #444; font-size: 14px; }
+  </style>
+</head>
+<body>
+
+<!-- Home -->
+<div class="page active" id="pageHome">
+  <div class="header"><div class="header-title">⚙️ 管理后台</div></div>
+  <div class="home">
+    <h2>请选择内容类型</h2>
+    <div class="type-btn football" onclick="goForm('football')">
+      <div class="type-icon">⚽</div>
+      <div class="type-info">
+        <h3>上传足球内容</h3>
+        <p>发布足球资讯、赛事、战术分析等</p>
+      </div>
+    </div>
+    <div class="type-btn basketball" onclick="goForm('basketball')">
+      <div class="type-icon">🏀</div>
+      <div class="type-info">
+        <h3>上传篮球内容</h3>
+        <p>发布篮球资讯、赛事、球员动态等</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Form -->
+<div class="page" id="pageForm">
+  <div class="form-page">
+    <div class="back-btn" onclick="goHome()">← 返回</div>
+    <div style="font-size:17px;font-weight:700;margin-bottom:20px;">
+      <span id="formTitleText"></span>
+      <span class="form-tag tag-football" id="formTag"></span>
+    </div>
+    <div class="form-group">
+      <label class="form-label">封面图片</label>
+      <div class="upload-box" id="uploadBox" onclick="document.getElementById('imgInput').click()">
+        <div class="upload-text">📷 点击上传图片</div>
+        <div class="upload-sub">支持 JPG/PNG/GIF，建议比例 16:9</div>
+      </div>
+      <input type="file" id="imgInput" accept="image/*" onchange="handleImg(this)">
+    </div>
+    <div class="form-group">
+      <label class="form-label">标题</label>
+      <textarea class="title-input" id="inputTitle" placeholder="请输入标题..." maxlength="80"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">正文内容</label>
+      <textarea class="content-input" id="inputContent" placeholder="请输入正文内容..."></textarea>
+    </div>
+    <button class="submit-btn" id="submitBtn" onclick="doSubmit()">确认上传</button>
+  </div>
+</div>
+
+<!-- List -->
+<div class="page" id="pageList">
+  <div class="list-page">
+    <div class="list-header">
+      <div class="list-header-left">
+        <div class="list-back" onclick="goHome()">←</div>
+        <div class="list-title" id="listTitle"></div>
+      </div>
+      <button class="add-btn" id="listAddBtn" onclick="goForm(currentType)">+ 上传</button>
+    </div>
+    <div class="list-body" id="listBody"></div>
+  </div>
+</div>
+
+<script>
+var currentType = 'football';
+var imgBase64 = '';
+
+function getData(type) {
+  try { return JSON.parse(localStorage.getItem('data_' + type) || '[]'); } catch { return []; }
+}
+
+function goHome() {
+  ['pageHome','pageForm','pageList'].forEach(function(id){ document.getElementById(id).classList.remove('active'); });
+  document.getElementById('pageHome').classList.add('active');
+}
+
+function goForm(type) {
+  currentType = type;
+  ['pageHome','pageForm','pageList'].forEach(function(id){ document.getElementById(id).classList.remove('active'); });
+  document.getElementById('pageForm').classList.add('active');
+  document.getElementById('formTitleText').textContent = type === 'football' ? '上传足球内容' : '上传篮球内容';
+  var tag = document.getElementById('formTag');
+  tag.textContent = type === 'football' ? '⚽ 足球' : '🏀 篮球';
+  tag.className = 'form-tag ' + (type === 'football' ? 'tag-football' : 'tag-basketball');
+  document.getElementById('submitBtn').className = 'submit-btn' + (type === 'basketball' ? ' basketball' : '');
+  imgBase64 = '';
+  var box = document.getElementById('uploadBox');
+  box.classList.remove('has-img');
+  box.innerHTML = '<div class="upload-text">📷 点击上传图片</div><div class="upload-sub">支持 JPG/PNG/GIF，建议比例 16:9</div>';
+  document.getElementById('inputTitle').value = '';
+  document.getElementById('inputContent').value = '';
+}
+
+function goList(type) {
+  currentType = type;
+  ['pageHome','pageForm','pageList'].forEach(function(id){ document.getElementById(id).classList.remove('active'); });
+  document.getElementById('pageList').classList.add('active');
+  document.getElementById('listTitle').textContent = type === 'football' ? '⚽ 足球内容管理' : '🏀 篮球内容管理';
+  var addBtn = document.getElementById('listAddBtn');
+  addBtn.className = 'add-btn' + (type === 'basketball' ? ' basketball' : '');
+  renderList();
+}
+
+function handleImg(input) {
+  var file = input.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    imgBase64 = e.target.result;
+    var box = document.getElementById('uploadBox');
+    box.classList.add('has-img');
+    box.innerHTML = '<img src="' + imgBase64 + '" alt="封面">';
+  };
+  reader.readAsDataURL(file);
+}
+
+function doSubmit() {
+  var title = document.getElementById('inputTitle').value.trim();
+  var content = document.getElementById('inputContent').value.trim();
+  if (!title) { alert('请输入标题'); return; }
+  if (!content) { alert('请输入正文内容'); return; }
+  var data = getData(currentType);
+  data.unshift({
+    id: currentType + '_' + Date.now(),
+    title: title,
+    content: content,
+    image: imgBase64,
+    type: currentType,
+    createTime: new Date().toISOString()
+  });
+  localStorage.setItem('data_' + currentType, JSON.stringify(data));
+  alert('上传成功！');
+  goList(currentType);
+}
+
+function fmtTime(ts) {
+  if (!ts) return '';
+  var d = new Date(ts);
+  return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+}
+function pad(n) { return n < 10 ? '0' + n : n; }
+
+function renderList() {
+  var data = getData(currentType);
+  var body = document.getElementById('listBody');
+  if (!data.length) { body.innerHTML = '<div class="empty-list">暂无内容，点击右上角上传</div>'; return; }
+  body.innerHTML = data.map(function(item) {
+    return '<div class="list-item">' +
+      '<img class="list-thumb" src="' + (item.image || '') + '" onerror="this.style.display=\'none\'">' +
+      '<div class="list-info"><div class="list-item-title">' + escHtml(item.title) + '</div><div class="list-item-time">' + fmtTime(item.createTime) + '</div></div>' +
+      '<button class="del-btn" onclick="delItem(\'' + item.id + '\')">删除</button>' +
+      '</div>';
+  }).join('');
+}
+
+function delItem(id) {
+  if (!confirm('确定删除？')) return;
+  var data = getData(currentType);
+  data = data.filter(function(x) { return x.id !== id; });
+  localStorage.setItem('data_' + currentType, JSON.stringify(data));
+  renderList();
+}
+
+function escHtml(s) {
+  var div = document.createElement('div');
+  div.textContent = s;
+  return div.innerHTML;
+}
+</script>
+</body>
+</html>
